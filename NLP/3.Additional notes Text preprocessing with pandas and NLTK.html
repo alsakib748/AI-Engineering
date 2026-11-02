@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Additional notes Text preprocessing with pandas and NLTK</title>
+
+        <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                font-family: var(--font-stack-text);
+                font-weight: 400;
+                line-height: 1.4;
+                font-size: 1.6rem;
+                color: #2d2f31;
+            }
+            .container {
+                position: relative;
+                height: 100%;
+                overflow-y: auto;
+            }
+            .content {
+                padding: 3.2rem 4.8rem;
+                word-break: break-word;
+                max-width: 69.6rem;
+                margin: 0 auto;
+            }
+            .heading {
+                margin-bottom: 24px;
+                font-family: -apple-system, BlinkMacSystemFont, Roboto, "Segoe UI", Helvetica, Arial, sans-serif,
+                    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+                font-weight: 700;
+                line-height: 1.2;
+                letter-spacing: 0;
+                font-size: 32px;
+                max-width: 36em;
+            }
+            .article-asset-container {
+                padding: 2.4rem;
+            }
+            .article-asset-container p {
+                font-size: 19px;
+            }
+            code {
+                background-color: #fff;
+                border: 1px solid #d1d7dc;
+                color: #b4690e;
+                font-size: 80%;
+                padding: 0.2rem 0.4rem;
+                font-family: sfmono-regular, Consolas, liberation mono, Menlo, Courier, monospace;
+            }
+            p {
+                font-weight: 400;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="content">
+                <div class="heading">Additional notes Text preprocessing with pandas and NLTK</div>
+                <div class="article-asset-container"><p>When preparing text for analysis or machine learning, we often perform several <strong>cleaning and transformation steps</strong> to make the text more uniform and easier to work with. Each step addresses a specific issue in raw text — from removing stopwords and punctuation to turning words into tokens and root forms.</p><p>Let’s start by analyzing one of these operations in detail and then move through the rest more briefly.</p><h4><strong>1. Removing Stopwords.</strong></h4><pre class="prettyprint linenums"> data['review_no_stopwords'] = data['review_lowercase'].apply(lambda x: ' '.join([word for word \
+                                in x.split() if word \
+                                not in (en_stopwords)]))</pre><p>At first, it might look intimidating — but this codeblock is simply doing several small, logical steps one after another. It’s written in one line to be compact, but let’s break it down and explain <strong>why</strong> each part is there and <strong>what</strong> it does.</p><p><em>(Note:&nbsp;In Python, a </em><strong><em>backslash at the end of a line</em></strong><em> means: “This line of code continues on the next line.” If your line of code is too long, or you want to break it for readability, you can put a </em><code><em>\</em></code><em> at the end — and Python will treat the next line as if it’s part of the same command.)</em></p><p><strong>Step 1. Creating a new column</strong></p><p><code>data['review_no_stopwords'] = ...</code></p><p>Here, a new column is being created in the DataFrame called <code>data</code>. In the brackets, we specify the name of that new column, in this case - <code>['review_no_stopwords']</code></p><p>Everything on the right-hand side will be the result stored in this column. This lets us keep the processed version of the text without overwriting the original one.</p><p><strong>Step 2. Selecting the column to transform</strong></p><p><code>data['review_lowercase']</code></p><p>This refers to the existing column that contains the lowercased text we want to process. We start from this column and apply a transformation to each of its entries. As we store the result in a new column <code>data['review_no_stopwords']</code>we make sure we don't modify the content inside <code>['review_lowercase']</code>.</p><p><strong>Step 3. Applying a function to each value</strong></p><p><code>.apply(lambda x: ...)</code></p><p>The <code>"apply"</code> function in pandas runs a given function on every element in a column. Here, that means it processes each text entry one by one.</p><p>The <code>"lambda x:"</code> part defines an <strong>anonymous function</strong> — a short, inline function that doesn’t need a name after it has been used once.<br>Each <code>x</code> represents a single text value from the column. Here, we name it <code>x</code> because it keeps the code compact but you can replace it with any valid variable name — for example <code>text</code>, <code>review</code>, or even <code>row</code> — and the code will work exactly the same way. <code>x</code> is just a variable name for each value that <code>"apply"</code> sends into the <code>"lambda"</code>.</p><p>Using a lambda function allows us to describe the transformation directly inside <code>"apply"</code>, without defining a separate function elsewhere.</p><p><strong>Step 4. Inside the lambda function</strong></p><p>This part defines what exactly we want to do to each text entry:</p><p><code>' '.join([word for word in x.split() if word not in (en_stopwords)])</code></p><p>Let’s go through it from the inside out.</p><p>1. Splitting the text</p><p><code>x.split()</code></p><p>This turns the text string into a list of individual words. We do this because we can’t check or remove stopwords while the text is one long string — we need to work with separate words. Splitting lets us inspect and filter words individually.</p><p>2. The list comprehension</p><p><code>[word for word in x.split() if word not in (en_stopwords)]</code></p><p>This is the heart of the operation.</p><p>It builds a <strong>new list</strong> of words, but only keeps those that are <strong>not</strong> in the <code>en_stopwords</code> list.</p><p>Let’s analyze the structure piece by piece:</p><ul><li><p><code><strong>word for word in x.split()</strong></code><br>This means: go through each <code>word</code> from the list created by <code>x.split()</code>. It’s a loop written in a compact form.</p><p>Here, <code>"word"</code> is the <strong>loop variable</strong> — the name given to each individual element in <code>x.split()</code> as the loop goes through them one by one. But any other name would work equally well. </p><p>The only rule: it must be <strong>the same name everywhere inside that comprehension</strong> — before and after the <code>for</code>.</p></li><li><p><code><strong>if word not in (en_stopwords)</strong></code><br>This is a filtering condition. It checks every word and only keeps it if it’s <em>not</em> found in the collection of stopwords.<br>This condition is evaluated for each word one by one.</p></li></ul><p>A list comprehension is just a <strong>shortened version of a regular </strong><code><strong>for</strong></code><strong> loop</strong>.</p><p>If we wrote it in full, it would look like this:</p><pre class="prettyprint linenums">new_list = []
+for word in x.split():
+    if word not in en_stopwords:
+        new_list.append(word)</pre><p>So, it reads naturally like this in plain English:</p><blockquote><p>“Create a new list of <strong>word</strong><br>for every <strong>word</strong> in <code>x.split()</code><br>if that <strong>word</strong> is not in <code>en_stopwords</code>.”</p></blockquote><p>The list comprehension is essentially performing two actions at once:</p><ol><li><p>Looping through every word in the text.</p></li><li><p>Selecting only those that meet the condition (not being a stopword).</p></li></ol><p>The reason we use a list comprehension here is efficiency — it’s faster and more concise than using a traditional <code>for</code> loop with <code>append()</code>.<br>It keeps the logic for looping and filtering in a single readable structure.</p><p>3. Joining the filtered words back</p><p><code>' '.join([...])</code></p><p>After filtering, we have a list of the remaining words.<br>But the column expects text, not a list.<br>So we join the words back together into one string, with spaces between them.</p><p>We use <code>' '.join()</code> because:</p><ul><li><p>The <code>' '</code> before <code>"join"</code> defines what goes between the words — in this case, a single space.</p></li><li><p><code>"join"</code> is called on that space string, and the list of words is passed in as an argument.</p></li></ul><p>The result is a single text string, rebuilt from the filtered words.</p><p><strong>Step 5. Why this works in one line</strong></p><p>Each method and function in this line passes its result directly into the next one.<br>Here’s the logical chain:</p><ol><li><p>Select the text column.</p></li><li><p>Apply a function to each entry.</p></li><li><p>Inside that function:</p><ul><li><p>Split the text into words.</p></li><li><p>Filter out stopwords using a list comprehension.</p></li><li><p>Join the remaining words back into a string.</p></li></ul></li><li><p>Store the final cleaned text in a new column.</p></li></ol><p>Because every step produces a return value that can be immediately used by the next,<br>the entire process can be written as a single continuous expression.</p><p>In practice, this one-liner is compact but completely logical —<br>each part is connected by a clear flow of transformation.</p><h4>Step 6. Key takeaways</h4><ul><li><p><code>"apply"</code> lets you process each value in a column individually.</p></li><li><p><code>"lambda"</code> creates a short inline function when defining a separate one isn’t necessary.</p></li><li><p><code>"split"</code> prepares the text for word-level processing.</p></li><li><p>The list comprehension both loops and filters efficiently in one step.</p></li><li><p><code>"join"</code> puts the filtered words back together into readable text.</p></li><li><p>The entire line works as a chain of transformations, passing results from one step to the next.</p></li></ul><h4>Continuing the Preprocessing Pipeline</h4><p>Now that you understand the structure and logic behind this one-line transformation,<br>you’ll notice that the following text preprocessing steps use a very similar pattern.<br>Let’s briefly go through each of them.</p><h4><strong>2. Replacing a Specific Character (the Asterisk)</strong></h4><pre class="prettyprint linenums">data['review_no_stopwords_no_punct'] = data \
+                                    .apply(lambda x: \
+                                    re.sub(r"[*]", \
+                                    "star", \
+                                    x['review_no_stopwords'] \
+                                    ), axis=1)</pre><p>Here, <code>"re dot sub"</code> replaces all asterisks (<code>*</code>) in the text with the word <code>"star"</code>.<br>We do this to make text more readable and consistent, since product ratings often use asterisks (for example, “5*”).</p><p>The pattern <code>r"[*]"</code> simply tells Python to look for the <code>*</code> character.<br>Using <code>"axis=1"</code> means we’re applying the function row by row, because each row is treated as a small dictionary of columns.</p><h4><strong>3. Removing All Remaining Punctuation</strong></h4><pre class="prettyprint linenums">data['review_no_stopwords_no_punct'] = data. \
+                                    apply(lambda x: \
+                                    re.sub(r"([^\w\s])", \
+                                    "", \
+                                    x['review_no_stopwords_no_punct'] \
+                                    ), axis=1)</pre><p>This line removes every punctuation symbol left in the text.<br>The regular expression <code>r"([^\w\s])"</code> matches anything that’s not a word character (<code>\w</code>) or whitespace (<code>\s</code>).<br>In other words, it deletes commas, periods, question marks, and similar symbols.</p><p>Removing punctuation helps standardize text before analysis and avoids treating punctuation as separate tokens later.</p><h4><strong>4. Tokenization</strong></h4><pre class="prettyprint linenums">data['tokenized'] = data.apply(lambda x: \
+                               word_tokenize( \
+                               x['review_no_stopwords_no_punct'] \
+                               ), axis=1)</pre><p>Now we convert each cleaned text string into a list of individual tokens (usually words).<br>The <code>"word_tokenize"</code> function from NLTK is more advanced than <code>"split()"</code> —<br>it recognizes punctuation and spacing correctly, even in complex text.</p><p>Tokenization prepares the data for any operation that needs to process each word separately,<br>such as stemming or lemmatization.</p><h4><strong>5. Stemming</strong></h4><pre class="prettyprint linenums">ps = PorterStemmer()
+data["stemmed"] = data["tokenized"] \
+                  .apply(lambda tokens: \
+                  [ps.stem(token) \
+                   for token in tokens])</pre><p>Here we initialize a <code>"PorterStemmer"</code> object and apply its <code>"stem"</code> method to every token.<br>Stemming reduces words to their base form by trimming common endings.<br>For instance, <code>"running"</code>, <code>"runs"</code>, and <code>"ran"</code> might all become <code>"run"</code>.</p><p>We use a list comprehension again because we’re looping through each token and transforming it in one compact expression.</p><h4><strong>6. Lemmatization</strong></h4><pre class="prettyprint linenums">lemmatizer = WordNetLemmatizer()
+nltk.download('wordnet')
+data["lemmatized"] = data["tokenized"] \
+                    .apply(lambda tokens: \
+                    [lemmatizer.lemmatize(token) \
+                     for token in tokens])</pre><p>Lemmatization looks similar to stemming but is <strong>smarter</strong> —<br>it uses a vocabulary and grammatical rules to find the <em>true base form</em> (lemma) of a word.<br>We use <code>"WordNetLemmatizer"</code> from NLTK, and downloading <code>"wordnet"</code> ensures the lemmatizer has the necessary database.</p><h4><strong>7. Creating N-grams</strong></h4><pre class="prettyprint linenums">tokens_clean = sum(data['lemmatized'], [])
+unigrams = (pd.Series \
+            (nltk.ngrams(tokens_clean, 1)) \
+            .value_counts()) 
+print(unigrams)</pre><p>Finally, we move beyond cleaning and start analyzing patterns in text.</p><ul><li><p><code>sum(data['lemmatized'], [])</code> flattens the list of token lists into one long list.</p></li><li><p><code>nltk.ngrams(tokens_clean, 1)</code> generates <strong>unigrams</strong>, or single-word combinations.</p></li><li><p>Wrapping that in <code>pd.Series(...).value_counts()</code> counts how often each unigram appears.</p></li></ul><p>If you change <code>1</code> to <code>2</code> or <code>3</code>, you’ll get <strong>bigrams</strong> or <strong>trigrams</strong> — sequences of two or three words,<br>helping identify common phrases or expressions in the text.</p><p><br></p><h4>Summary</h4><p>Throughout these steps, we’ve built a compact and powerful text preprocessing pipeline.<br>Every transformation follows the same logic:<br>take an existing column, apply a function to transform each text, and store the result in a new column.</p><p>Each step — from removing unwanted words to identifying frequent word patterns —<br>brings the raw text closer to a structured form that algorithms can understand and learn from.</p></div>
+            </div>
+        </div>
+    </body>
+</html>
